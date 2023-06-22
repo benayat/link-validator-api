@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -15,15 +16,13 @@ public class LinksController {
     private final LinksService linksService;
 
     @GetMapping("/validateLink-url")
-    public UrlSafety validateLinkDirectSearch(@RequestBody String link) {
-        return linksService.isSafeUrlDirectSearch(link) ? UrlSafety.VALID : UrlSafety.INVALID;
+    public UrlSafety validateLink(@RequestBody String link, @RequestParam("directSearch") boolean isDirectSearch) {
+        if (isDirectSearch) {
+            return linksService.isSafeUrlByDirectSearch(link) ? UrlSafety.VALID : UrlSafety.INVALID;
+        }else{
+            return linksService.isSafeUrlByDomainSearch(link) ? UrlSafety.VALID : UrlSafety.INVALID;
+        }
     }
-
-    @GetMapping("/validateLink-url")
-    public UrlSafety validateLinkByDomainSearchThenUrl(@RequestBody String link) {
-        return linksService.isSafeUrlByDomainSearch(link) ? UrlSafety.VALID : UrlSafety.INVALID;
-    }
-
     @GetMapping("/validateLink-domain")
     public UrlSafety validateLinkByDomain(@RequestBody String link) {
         return linksService.isSafeDomain(link) ? UrlSafety.VALID : UrlSafety.INVALID;
