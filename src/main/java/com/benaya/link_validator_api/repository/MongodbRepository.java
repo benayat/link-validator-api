@@ -6,5 +6,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 public interface MongodbRepository extends MongoRepository<Domain, String> {
     boolean existsByName(String domainName);
 
-    boolean existsDomainByUrlsContains(String url);
+//    boolean existsDomainByUrlsContains(String url);
+    boolean existsByUrlsContains(String url);
 }
