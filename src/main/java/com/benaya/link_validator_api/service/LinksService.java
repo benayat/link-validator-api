@@ -34,7 +34,7 @@ public class LinksService {
         }
         return !domainObj.getUrls().contains(url);
     }
-    public boolean isSafeDomain(String url) {
+    public boolean isSafeDomainByUrl(String url) {
         if (!isValidUrl(url)) {
             throw new IllegalArgumentException("Invalid URL: " + url);
         }

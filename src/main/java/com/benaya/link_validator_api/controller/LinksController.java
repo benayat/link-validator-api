@@ -25,6 +25,6 @@ public class LinksController {
     }
     @GetMapping("/validateLink-domain")
     public UrlSafety validateLinkByDomain(@RequestBody String link) {
-        return linksService.isSafeDomain(link) ? UrlSafety.VALID : UrlSafety.INVALID;
+        return linksService.isSafeDomainByUrl(link) ? UrlSafety.VALID : UrlSafety.INVALID;
     }
 }
