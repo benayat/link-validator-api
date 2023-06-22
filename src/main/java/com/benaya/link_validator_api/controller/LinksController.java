@@ -1,6 +1,7 @@
 package com.benaya.link_validator_api.controller;
 
-import com.benaya.link_validator_api.service.MongodbService;
+import com.benaya.link_validator_api.model.UrlSafety;
+import com.benaya.link_validator_api.service.LinksService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,13 +12,20 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Slf4j
 public class LinksController {
-    private final MongodbService mongodbService;
+    private final LinksService linksService;
+
     @GetMapping("/validateLink-url")
-    public boolean validateLink(@RequestBody String link) {
-        return mongodbService.notExistsByUrl(link);
+    public UrlSafety validateLinkDirectSearch(@RequestBody String link) {
+        return linksService.isSafeUrlDirectSearch(link) ? UrlSafety.VALID : UrlSafety.INVALID;
     }
+
+    @GetMapping("/validateLink-url")
+    public UrlSafety validateLinkByDomainSearchThenUrl(@RequestBody String link) {
+        return linksService.isSafeUrlByDomainSearch(link) ? UrlSafety.VALID : UrlSafety.INVALID;
+    }
+
     @GetMapping("/validateLink-domain")
-    public boolean validateLinkByDomain(@RequestBody String link) {
-        return mongodbService.notExistsByDomain(link);
+    public UrlSafety validateLinkByDomain(@RequestBody String link) {
+        return linksService.isSafeDomain(link) ? UrlSafety.VALID : UrlSafety.INVALID;
     }
 }
