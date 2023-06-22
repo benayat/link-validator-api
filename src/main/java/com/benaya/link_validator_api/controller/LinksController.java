@@ -16,7 +16,7 @@ public class LinksController {
     private final LinksService linksService;
 
     @GetMapping("/validateLink-url")
-    public UrlSafety validateLinkDirectSearch(@RequestBody String link, @RequestParam("directSearch") boolean isDirectSearch) {
+    public UrlSafety validateLink(@RequestBody String link, @RequestParam("directSearch") boolean isDirectSearch) {
         if (!isDirectSearch) {
             return linksService.isSafeUrlByDomainSearch(link) ? UrlSafety.VALID : UrlSafety.INVALID;
         }
