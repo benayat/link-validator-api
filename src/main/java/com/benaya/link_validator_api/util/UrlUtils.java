@@ -1,6 +1,9 @@
 package com.benaya.link_validator_api.util;
 
+import com.benaya.link_validator_api.exception.BadUrlException;
+
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 public class UrlUtils {
@@ -12,12 +15,11 @@ public class UrlUtils {
             return null;
         }
     }
-    public static boolean isValidUrl(String url) {
+    public static void validateUrl(String url) {
         try {
-            new URL(url);
-            return true;
-        } catch (MalformedURLException e) {
-            return false;
+            new URL(url).toURI();
+        } catch (URISyntaxException | MalformedURLException e) {
+            throw new BadUrlException(e);
         }
     }
 }

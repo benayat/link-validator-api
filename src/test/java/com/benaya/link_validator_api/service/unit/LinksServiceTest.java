@@ -1,7 +1,7 @@
 package com.benaya.link_validator_api.service.unit;
 
 import com.benaya.link_validator_api.model.Domain;
-import com.benaya.link_validator_api.repository.MongodbRepository;
+import com.benaya.link_validator_api.service.CachingService;
 import com.benaya.link_validator_api.service.LinksService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -11,7 +11,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -20,9 +19,8 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class LinksServiceTest {
-
     @Mock
-    private MongodbRepository repository;
+    private CachingService cachingService;
 
     @InjectMocks
     private LinksService service;
@@ -34,17 +32,15 @@ public class LinksServiceTest {
     private static final String domainNotFromList = "unsafe-url.com";
     @BeforeAll
     public static void init() {
-        String url1 = "http://safe-url.com/oascijmsdoifdjoisdj";
-        String url2 = "http://bafybeiatjc366ulydhzw767hbng7crkrfhtodd5lstcihaveyqvffnvexu.ipfs.dweb.link/jd04691_onedriveoe7w.html";
-        String url3 = "https://objectstorage.sa-saopaulo-1.oraclecloud.com/n/grcrplvrg8aa/b/bucket-20230608-0554/o/index.html";
-        String url4 = "https://www.youtube.com/watch?v=6n3pFFPSlW4";
-        urls = List.of(url1, url2, url3, url4);
+        urls = List.of("http://safe-url.com/oascijmsdoifdjoisdj",
+                "http://bafybeiatjc366ulydhzw767hbng7crkrfhtodd5lstcihaveyqvffnvexu.ipfs.dweb.link/jd04691_onedriveoe7w.html",
+                "https://objectstorage.sa-saopaulo-1.oraclecloud.com/n/grcrplvrg8aa/b/bucket-20230608-0554/o/index.html");
     }
 
     @Test
     public void testIsSafeUrlByDirectSearch_WhenUrlExistsInDatabase() {
         // Arrange
-        when(repository.existsByUrlsContains(anyString())).thenReturn(true);
+        when(cachingService.isSafeUrlByDirectSearch(anyString())).thenReturn(false);
 
         // Act
         boolean result = service.isSafeUrlByDirectSearch(urlToSearchFromList);
@@ -55,34 +51,19 @@ public class LinksServiceTest {
     @Test
     public void testIsSafeUrlByDirectSearch_WhenUrlDoesNotExistInDatabase() {
         // Arrange
-        when(repository.existsByUrlsContains(anyString())).thenReturn(false);
-
-
+        when(cachingService.isSafeUrlByDirectSearch(anyString())).thenReturn(true);
         // Act
         boolean result = service.isSafeUrlByDirectSearch(urlToSearchNotFromList);
-
         // Assert
         assertTrue(result);
     }
 
     @Test
-    public void testIsSafeUrlByDirectSearch_WhenUrlExistsInCache() {
-        // Arrange
-        when(repository.existsByUrlsContains(anyString())).thenReturn(true);
-
-        // Act - create a loop of 10 calls to the method, add results to list
-        boolean result = service.isSafeUrlByDirectSearch(urlToSearchFromList);
-
-        // Assert
-        assertFalse(result);
-    }
-
-    @Test
     public void testIsSafeUrlByDomainSearch_WhenDomainExistsInDatabase() {
         // Arrange
-        when(repository.findById(anyString())).thenReturn(Optional.ofNullable(Domain.builder().name(domainFromList).urls(urls).build()));
+        when(cachingService.getDomainFromCache(anyString())).thenReturn(Domain.builder().name(domainFromList).urls(urls).build());
         // Act
-        boolean result = service.isSafeUrlByDomainSearch(urlToSearchFromList);
+        boolean result = service.isSafeUrlByDomainSearchThenUrl(urlToSearchFromList);
         // Assert
         assertFalse(result);
     }
@@ -90,10 +71,21 @@ public class LinksServiceTest {
     @Test
     public void testIsSafeUrlByDomainSearch_WhenDomainDoesNotExistInDatabase() {
         // Arrange
-        when(repository.findById(anyString())).thenReturn(Optional.ofNullable(Domain.builder().name(domainNotFromList).urls(urls).build()));
+        when(cachingService.getDomainFromCache(anyString())).thenReturn(Domain.builder().name(domainNotFromList).urls(urls).build());
 
         // Act
-        boolean result = service.isSafeUrlByDomainSearch(urlToSearchNotFromList);
+        boolean result = service.isSafeUrlByDomainSearchThenUrl(urlToSearchNotFromList);
+
+        // Assert
+        assertTrue(result);
+    }
+    @Test
+    public void testIsSafeUrlByDomainSearch_WhenDomainExistsInDatabaseButUrlDoesNotExist() {
+        // Arrange
+        when(cachingService.getDomainFromCache(anyString())).thenReturn(Domain.builder().name(domainFromList).urls(urls).build());
+
+        // Act
+        boolean result = service.isSafeUrlByDomainSearchThenUrl(urlToSearchNotFromList);
 
         // Assert
         assertTrue(result);
@@ -102,7 +94,7 @@ public class LinksServiceTest {
     @Test
     public void testIsSafeDomain_WhenDomainExistsInDatabase() {
         // Arrange
-        when(repository.existsByName(anyString())).thenReturn(true);
+        when(cachingService.isUnsafeDomainCached(anyString())).thenReturn(true);
         // Act
         boolean result = service.isSafeDomainByUrl(urlToSearchFromList);
         // Assert
@@ -112,7 +104,7 @@ public class LinksServiceTest {
     @Test
     public void testIsSafeDomain_WhenDomainDoesNotExistInDatabase() {
         // Arrange
-        when(repository.existsByName(anyString())).thenReturn(false);
+        when(cachingService.isUnsafeDomainCached(anyString())).thenReturn(false);
         // Act
         boolean result = service.isSafeDomainByUrl(urlToSearchNotFromList);
         // Assert
