@@ -1,7 +1,8 @@
-package com.benaya.link_validator_api.service;
+package com.benaya.link_validator_api.service.unit;
 
 import com.benaya.link_validator_api.model.Domain;
 import com.benaya.link_validator_api.repository.MongodbRepository;
+import com.benaya.link_validator_api.service.LinksService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
