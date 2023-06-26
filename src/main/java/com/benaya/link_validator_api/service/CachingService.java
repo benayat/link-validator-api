@@ -5,6 +5,7 @@ import com.benaya.link_validator_api.repository.DomainRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -25,8 +26,8 @@ public class CachingService {
         return domainRepository.existsByName(domain);
     }
 
+    @Scheduled(fixedDelay = 5, timeUnit = java.util.concurrent.TimeUnit.MINUTES)
     @CacheEvict(value = {"urlCache, domainCacheExist, domainCache"}, allEntries = true)
     public void cacheEvict() {
     }
-
 }
