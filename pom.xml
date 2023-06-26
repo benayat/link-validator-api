@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.benaya</groupId>
 	<artifactId>link_validator_api</artifactId>
-	<version>2.0.0-SNAPSHOT</version>
+	<version>2.0.0</version>
 	<name>link_validator_api</name>
 	<description>link_validator_api</description>
 	<properties>
