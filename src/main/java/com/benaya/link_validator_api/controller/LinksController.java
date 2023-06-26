@@ -2,6 +2,7 @@ package com.benaya.link_validator_api.controller;
 
 import com.benaya.link_validator_api.model.UrlSafety;
 import com.benaya.link_validator_api.service.LinksService;
+import com.benaya.link_validator_api.util.UrlUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,14 +18,16 @@ public class LinksController {
 
     @GetMapping("/validateLink-url")
     public UrlSafety validateLink(@RequestBody String link, @RequestParam("directSearch") boolean isDirectSearch) {
+        UrlUtils.validateUrl(link);
         if (isDirectSearch) {
             return linksService.isSafeUrlByDirectSearch(link) ? UrlSafety.VALID : UrlSafety.INVALID;
         }else{
-            return linksService.isSafeUrlByDomainSearch(link) ? UrlSafety.VALID : UrlSafety.INVALID;
+            return linksService.isSafeUrlByDomainSearchThenUrl(link) ? UrlSafety.VALID : UrlSafety.INVALID;
         }
     }
     @GetMapping("/validateLink-domain")
     public UrlSafety validateLinkByDomain(@RequestBody String link) {
+        UrlUtils.validateUrl(link);
         return linksService.isSafeDomainByUrl(link) ? UrlSafety.VALID : UrlSafety.INVALID;
     }
 }
